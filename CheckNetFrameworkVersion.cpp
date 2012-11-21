@@ -9,6 +9,7 @@ OSVERSIONINFOEX OSVersionInfo; // needed to distinguish Windows 9x/NT
 string GetWindowsVersion();
 string GetNetFrameworkVersion();
 std::basic_ostream< char, std::char_traits<char> >& operator << ( std::basic_ostream< char, std::char_traits<char> >& out, const char* str );
+string GetNextFrameworkVersionInfo(HKEY hkNetFrameworkVersions, string vernumber);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -262,93 +263,10 @@ string GetNetFrameworkVersion()
 
 		// перебираем все вложенные ключи
 		CRegKey keyVersions( hkNetFrameworkVersions );
-		CRegKey keyCurrentVer;
 
 		while ( (err = keyVersions.EnumKey( KeyNumber, &subKey[0], &nSize ) ) == ERROR_SUCCESS )
 		{
-			// сохраняем название раздела
-			string vernumber = &subKey[0];
-			string nextver = vernumber + "\t- Version: ";
-
-			// ищем внутри раздела строковый ключ с именем Version
-			if( (err = keyCurrentVer.Open( hkNetFrameworkVersions, &subKey[0], KEY_READ )) == ERROR_SUCCESS )
-			{
-				char vernum[100];
-				ZeroMemory( vernum, sizeof(vernum));
-				DWORD vernumlen = sizeof(vernum) - 1;
-
-				if( (err = keyCurrentVer.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
-				{
-					nextver += vernum;
-					nextver += "\r\n";
-				}
-				else
-				{
-					// нет ключа с именем Version, может это .net v4 где Version лежит в подключах Full и Client?
-					if( vernumber == "v4" )
-					{
-						CRegKey keyV4Vers(hkNetFrameworkVersions);
-						string v4vernumber = vernumber + "\\Full";
-						ZeroMemory( vernum, sizeof(vernum));
-						// после предыдущего неудачного запроса QueryStringValue в vernumlen будет 0!
-						vernumlen = sizeof(vernum) - 1;
-
-						if( (err = keyV4Vers.Open( hkNetFrameworkVersions, v4vernumber.c_str(), KEY_READ )) == ERROR_SUCCESS )
-						{
-							if( (err = keyV4Vers.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
-							{
-								nextver += vernum;
-								nextver += " Full";
-								nextver += "\r\n";
-							}
-							else
-							{
-								CErrCodeMsg errinfo(err);
-								nextver += errinfo.GetString();
-								nextver += "\r\n";
-							}
-						}
-						else
-						{
-							v4vernumber = vernumber + "\\Client";
-							if( (err = keyV4Vers.Open( hkNetFrameworkVersions, v4vernumber.c_str(), KEY_READ )) == ERROR_SUCCESS )
-							{
-								ZeroMemory( vernum, sizeof(vernum));
-								// после предыдущего неудачного запроса QueryStringValue в vernumlen будет 0!
-								vernumlen = sizeof(vernum) - 1;
-								if( (err = keyV4Vers.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
-								{
-									nextver += vernum;
-									nextver += " Client only";
-									nextver += "\r\n";
-								}
-								else
-								{
-									CErrCodeMsg errinfo(err);
-									nextver += errinfo.GetString();
-									nextver += "\r\n";
-								}
-							}
-						}
-						keyV4Vers.Close();
-					}
-					else
-					{
-						nextver += "неизв.\r\n";
-						//CErrCodeMsg errinfo(err);
-						//nextver += errinfo.GetString();
-					}
-				}
-
-				keyCurrentVer.Close();
-			}
-			else
-			{
-				CErrCodeMsg errinfo(err);
-				nextver += errinfo.GetString();
-			}
-
-			allverinfo += nextver;
+			allverinfo += GetNextFrameworkVersionInfo(hkNetFrameworkVersions, &subKey[0]);
 			// для очередной итерации
 			KeyNumber++;
 			nSize = nMaxLen;
@@ -361,5 +279,85 @@ string GetNetFrameworkVersion()
 	}
 
 	return allverinfo;
+}
+
+string GetNextFrameworkVersionInfo(HKEY hkNetFrameworkVersions, string vernumber)
+{
+	CRegKey keyCurrentVer;
+	DWORD err = 0;
+	string nextver = vernumber + "\t- Version: ";
+	char vernum[100];
+	ZeroMemory( vernum, sizeof(vernum));
+	DWORD vernumlen = sizeof(vernum) - 1;
+
+	if( vernumber != "v4" )
+	{
+		// ищем внутри раздела строковый ключ с именем Version
+		if( (err = keyCurrentVer.Open( hkNetFrameworkVersions, vernumber.c_str(), KEY_READ )) == ERROR_SUCCESS )
+		{
+
+			if( (err = keyCurrentVer.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
+			{
+				nextver += vernum;
+				nextver += "\r\n";
+			}
+			else
+				nextver += "неизв.\r\n";
+		}
+		else
+		{
+			// раздел есть, но открыть его не получается - фигня какая-то
+			CErrCodeMsg errinfo(err);
+			nextver += errinfo.GetString();
+		}
+	}
+	else 
+	{
+		// vernumber == "v4" - ищем в подключах
+		CRegKey keyV4Vers;
+		string v4vernumber = vernumber + "\\Full";
+		ZeroMemory( vernum, sizeof(vernum));
+		// после предыдущего неудачного запроса QueryStringValue в vernumlen будет 0!
+		vernumlen = sizeof(vernum) - 1;
+
+		if( (err = keyV4Vers.Open( hkNetFrameworkVersions, v4vernumber.c_str(), KEY_READ )) == ERROR_SUCCESS )
+		{
+			if( (err = keyV4Vers.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
+			{
+				nextver += vernum;
+				nextver += " Full\r\n";
+			}
+			else
+				nextver += "неизв.\r\n";
+		}
+		else // подраздела Full нету, ищем в Client
+		{
+			v4vernumber = vernumber + "\\Client";
+			if( (err = keyV4Vers.Open( hkNetFrameworkVersions, v4vernumber.c_str(), KEY_READ )) == ERROR_SUCCESS )
+			{
+				ZeroMemory( vernum, sizeof(vernum));
+				// после предыдущего неудачного запроса QueryStringValue в vernumlen будет 0!
+				vernumlen = sizeof(vernum) - 1;
+				if( (err = keyV4Vers.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
+				{
+					nextver += vernum;
+					nextver += " Client only\r\n";
+				}
+				else
+				{
+					CErrCodeMsg errinfo(err);
+					nextver += errinfo.GetString();
+					nextver += "\r\n";
+				}
+			}
+			else // странно это, v4 есть, а Full или Client нету
+			{
+				CErrCodeMsg errinfo(err);
+				nextver += errinfo.GetString();
+			}
+		}
+	}
+
+	return nextver;
 }
 
