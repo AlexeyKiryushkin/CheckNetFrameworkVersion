@@ -89,7 +89,7 @@ string GetWindowsVersion()
 			break;
 
 		default:
-			m_sTmp.Format ( "Windows N%ld %ld.%ld.%ld", OSVersionInfo.dwPlatformId,
+			m_sTmp.Format ( "Windows %ld %ld.%ld.%ld", OSVersionInfo.dwPlatformId,
 				OSVersionInfo.dwMajorVersion,
 				OSVersionInfo.dwMinorVersion,
 				OSVersionInfo.dwBuildNumber );
@@ -107,74 +107,123 @@ string GetWindowsVersion()
 					OSVersionInfo.dwMinorVersion,
 					OSVersionInfo.dwBuildNumber );
 			}
-
-			if ( OSVersionInfo.dwMajorVersion == 5 )
+			else
 			{
-				if ( OSVersionInfo.dwMinorVersion == 0 )
+				if ( OSVersionInfo.dwMajorVersion == 5 )
 				{
-					m_sTmp.Format ( "Windows 2000 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
-						OSVersionInfo.dwMinorVersion,
-						OSVersionInfo.dwBuildNumber );
+					if ( OSVersionInfo.dwMinorVersion == 0 )
+					{
+						m_sTmp.Format ( "Windows 2000 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+							OSVersionInfo.dwMinorVersion,
+							OSVersionInfo.dwBuildNumber );
 
-				}
+					}
 
-				if ( IsVersionEx )
-				{
-					// Test for the workstation type.
+					if ( IsVersionEx )
+					{
+						if ( OSVersionInfo.wProductType == VER_NT_WORKSTATION && OSVersionInfo.dwMinorVersion == 1 )
+						{
+							m_sTmp.Format ( "Windows XP %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+								OSVersionInfo.dwMinorVersion,
+								OSVersionInfo.dwBuildNumber );
+						}
 
-					if ( OSVersionInfo.wProductType == VER_NT_WORKSTATION && OSVersionInfo.dwMinorVersion == 1 )
+						if ( OSVersionInfo.wSuiteMask & VER_SUITE_PERSONAL && OSVersionInfo.wProductType != VER_NT_SERVER )
+							m_sTmp += " Home Edition";
+						else
+							m_sTmp += " Professional";
+
+						if ( OSVersionInfo.wProductType == VER_NT_SERVER )
+						{
+							if ( OSVersionInfo.dwMinorVersion == 1 )
+							{
+								m_sTmp.Format ( "Microsoft Windows .NET %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+									OSVersionInfo.dwMinorVersion,
+									OSVersionInfo.dwBuildNumber );
+							}
+
+							if ( OSVersionInfo.dwMinorVersion == 2 )
+							{
+								m_sTmp.Format ( "Microsoft Windows 2003 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+									OSVersionInfo.dwMinorVersion,
+									OSVersionInfo.dwBuildNumber );
+							}
+
+							if ( OSVersionInfo.wSuiteMask & VER_SUITE_DATACENTER )
+								m_sTmp += " DataCenter Server";
+							else if ( OSVersionInfo.wSuiteMask & VER_SUITE_ENTERPRISE )
+								if ( OSVersionInfo.dwMajorVersion == 4 )
+									m_sTmp += " Advanced Server";
+								else
+									m_sTmp += " Enterprise Server";
+							else if ( OSVersionInfo.wSuiteMask == VER_SUITE_BLADE )
+								m_sTmp += " Web Server";
+							else
+								m_sTmp += " Server";
+						}
+					}
+					else
 					{
 						m_sTmp.Format ( "Windows XP %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
 							OSVersionInfo.dwMinorVersion,
 							OSVersionInfo.dwBuildNumber );
 					}
-
-					if ( OSVersionInfo.wSuiteMask & VER_SUITE_PERSONAL && OSVersionInfo.wProductType != VER_NT_SERVER )
-						m_sTmp += " Home Edition";
-					else
-						m_sTmp += " Professional";
-
-					if ( OSVersionInfo.wProductType == VER_NT_SERVER )
-					{
-						if ( OSVersionInfo.dwMinorVersion == 1 )
-						{
-							m_sTmp.Format ( "Microsoft Windows .NET %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
-								OSVersionInfo.dwMinorVersion,
-								OSVersionInfo.dwBuildNumber );
-						}
-
-						if ( OSVersionInfo.dwMinorVersion == 2 )
-						{
-							m_sTmp.Format ( "Microsoft Windows 2003 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
-								OSVersionInfo.dwMinorVersion,
-								OSVersionInfo.dwBuildNumber );
-						}
-
-						if ( OSVersionInfo.wSuiteMask & VER_SUITE_DATACENTER )
-							m_sTmp += " DataCenter Server";
-						else if ( OSVersionInfo.wSuiteMask & VER_SUITE_ENTERPRISE )
-							if ( OSVersionInfo.dwMajorVersion == 4 )
-								m_sTmp += " Advanced Server";
-							else
-								m_sTmp += " Enterprise Server";
-						else if ( OSVersionInfo.wSuiteMask == VER_SUITE_BLADE )
-							m_sTmp += " Web Server";
-						else
-							m_sTmp += " Server";
-					}
-
 				}
 				else
 				{
-					m_sTmp.Format ( "Windows XP %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
-						OSVersionInfo.dwMinorVersion,
-						OSVersionInfo.dwBuildNumber );
+					if ( OSVersionInfo.dwMajorVersion == 6 )
+					{
+						switch( OSVersionInfo.dwMinorVersion )
+						{
+							case 0:
+								if (OSVersionInfo.wProductType == VER_NT_WORKSTATION)
+									m_sTmp.Format ( "Microsoft Windows Vista %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+								else
+									m_sTmp.Format ( "Microsoft Windows Server 2008 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+							break;
+							case 1:
+								if (OSVersionInfo.wProductType == VER_NT_WORKSTATION)
+									m_sTmp.Format ( "Microsoft Windows 7 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+								else
+									m_sTmp.Format ( "Microsoft Windows Server 2008 R2 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+								break;
+							case 2:
+								if (OSVersionInfo.wProductType == VER_NT_WORKSTATION)
+									m_sTmp.Format ( "Microsoft Windows 8 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+								else
+									m_sTmp.Format ( "Microsoft Windows Server 2012 %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+								break;
+							default:
+								if (OSVersionInfo.wProductType == VER_NT_WORKSTATION)
+									m_sTmp.Format ( "Microsoft Windows %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+								else
+									m_sTmp.Format ( "Microsoft Windows Server %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,
+										OSVersionInfo.dwMinorVersion,
+										OSVersionInfo.dwBuildNumber );
+						}
+					}
+					else
+						m_sTmp.Format ( "Windows NT %ld.%ld.%ld", OSVersionInfo.dwMajorVersion,	OSVersionInfo.dwMinorVersion, OSVersionInfo.dwBuildNumber );
 				}
 			}
 		}
 		else
 		{
-			m_sTmp.Format ( "Windows N%ld %ld.%ld.%ld", OSVersionInfo.dwPlatformId,
+			m_sTmp.Format ( "Windows %ld %ld.%ld.%ld", OSVersionInfo.dwPlatformId,
 				OSVersionInfo.dwMajorVersion,
 				OSVersionInfo.dwMinorVersion,
 				OSVersionInfo.dwBuildNumber );
