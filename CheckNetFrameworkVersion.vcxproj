@@ -90,7 +90,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AutoBuf.cpp" />
     <ClCompile Include="CheckNetFrameworkVersion.cpp" />
     <ClCompile Include="NetFrameworkVersion.cpp" />
     <ClCompile Include="rusout.cpp" />
@@ -101,7 +100,6 @@
     <ClCompile Include="winversion.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AutoBuf.h" />
     <ClInclude Include="ErrCodeMsg.h" />
     <ClInclude Include="NetFrameworkVersion.h" />
     <ClInclude Include="resource.h" />

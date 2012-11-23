@@ -12,18 +12,19 @@ DWORD GetVersionStringValue(HKEY hkNetFrameworkVersions, string subkey, string &
 	// ищем внутри раздела строковый ключ с именем Version
 	if( (err = keyVer.Open( hkNetFrameworkVersions, subkey.c_str(), KEY_READ )) == ERROR_SUCCESS )
 	{
-
+		// ошибка нехватки буфера ERROR_MORE_DATA = 234 никак не анализируетс€, 
+		// так как верси€ длинее 99 символов - это все равно неправильна€ кака€-то верси€
 		if( (err = keyVer.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
 		{
 			versiontext += vernum;
-			versiontext += "\r\n";
 		}
 		else
-			versiontext += "неизв.\r\n";
+			// ну нету такого ключа, бывает
+			versiontext += "неизв.";
 	}
 	else
 	{
-		// раздел есть, но открыть его не получаетс€ - фигн€ кака€-то
+		// раздел есть, но открыть его не получаетс€ - фигн€ кака€-то, надо показать
 		CErrCodeMsg errinfo(err);
 		versiontext += errinfo.GetString();
 	}
@@ -38,27 +39,34 @@ string GetVersionFromKey(HKEY hkNetFrameworkVersions, string vernumberkey)
 
 	GetVersionStringValue(hkNetFrameworkVersions, vernumberkey, versionvalue);
 
-	return versionvalue;
+	return versionvalue + "\r\n";
 }
 
 string GetV4VersionFromKey(HKEY hkNetFrameworkVersions, string vernumberkey)
 {
 	string versionvalue;
 
-	string v4vernumber = vernumberkey + "\\Full";
+	// дл€ .NET v4 есть два подключа, каждый со своей версией
+	if ( GetVersionStringValue(hkNetFrameworkVersions, vernumberkey + "\\Full", versionvalue) == ERROR_SUCCESS )
+		versionvalue += " Full";
+	else
+		if ( GetVersionStringValue(hkNetFrameworkVersions, vernumberkey + "\\Client", versionvalue)  == ERROR_SUCCESS )
+			versionvalue += " Client";
 
-	if ( GetVersionStringValue(hkNetFrameworkVersions, v4vernumber, versionvalue) != ERROR_SUCCESS )
-	{
-		v4vernumber = vernumberkey + "\\Client";
-		GetVersionStringValue(hkNetFrameworkVersions, v4vernumber, versionvalue);
-	}
-
-	return versionvalue;
+	return versionvalue + "\r\n";
 }
 
-string GetNextFrameworkVersionInfo(HKEY hkNetFrameworkVersions, string vernumberkey)
+string AlignTo( string str, DWORD align )
 {
-	string nextver = vernumberkey + "\t\t- Version: ";
+	while( str.length() < align )
+		str += " ";
+
+	return str;
+}
+
+string GetNextFrameworkVersionInfo(HKEY hkNetFrameworkVersions, string vernumberkey, DWORD align)
+{
+	string nextver = AlignTo( vernumberkey, align ) + "- ";
 
 	if( vernumberkey != "v4" )
 		nextver += GetVersionFromKey(hkNetFrameworkVersions, vernumberkey);
@@ -97,7 +105,7 @@ string GetNetFrameworkVersion()
 
 		while ( (err = keyVersions.EnumKey( KeyNumber, &subKey[0], &nSize ) ) == ERROR_SUCCESS )
 		{
-			allverinfo += GetNextFrameworkVersionInfo(hkNetFrameworkVersions, &subKey[0]);
+			allverinfo += GetNextFrameworkVersionInfo(hkNetFrameworkVersions, &subKey[0], nMaxLen + 3);
 			// дл€ очередной итерации
 			KeyNumber++;
 			nSize = nMaxLen;
