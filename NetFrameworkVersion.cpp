@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "errcodemsg.h"
 
-DWORD GetVersionStringValue(HKEY hkNetFrameworkVersions, string subkey, string &versiontext)
+DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subkey, string &versiontext)
 {
 	DWORD err = 0;
 	CRegKey keyVer;
@@ -32,7 +32,7 @@ DWORD GetVersionStringValue(HKEY hkNetFrameworkVersions, string subkey, string &
 	return err;
 }
 
-string GetVersionFromKey(HKEY hkNetFrameworkVersions, string vernumberkey)
+string GetVersionFromKey(const HKEY hkNetFrameworkVersions, const string vernumberkey)
 {
 	DWORD err = 0;
 	string versionvalue;
@@ -42,7 +42,7 @@ string GetVersionFromKey(HKEY hkNetFrameworkVersions, string vernumberkey)
 	return versionvalue + "\r\n";
 }
 
-string GetV4VersionFromKey(HKEY hkNetFrameworkVersions, string vernumberkey)
+string GetV4VersionFromKey(const HKEY hkNetFrameworkVersions, const string vernumberkey)
 {
 	string versionvalue;
 
@@ -56,7 +56,7 @@ string GetV4VersionFromKey(HKEY hkNetFrameworkVersions, string vernumberkey)
 	return versionvalue + "\r\n";
 }
 
-string AlignTo( string str, DWORD align )
+string AlignTo( string str, const DWORD align )
 {
 	while( str.length() < align )
 		str += " ";
@@ -64,7 +64,7 @@ string AlignTo( string str, DWORD align )
 	return str;
 }
 
-string GetNextFrameworkVersionInfo(HKEY hkNetFrameworkVersions, string vernumberkey, DWORD align)
+string GetNextFrameworkVersionInfo(const HKEY hkNetFrameworkVersions, const string vernumberkey, const DWORD align)
 {
 	string nextver = AlignTo( vernumberkey, align ) + "- ";
 
