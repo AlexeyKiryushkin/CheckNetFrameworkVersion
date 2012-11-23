@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "autobuf.h"
 #include "errcodemsg.h"
 
 OSVERSIONINFOEX OSVersionInfo; // needed to distinguish Windows 9x/NT
@@ -8,7 +7,6 @@ string GetWindowsVersion()
 {
 	CString m_sTmp;
 	BOOL IsVersionEx = FALSE;
-	CAutoBuf<char> abuf;
 
 	//версия ОС:
 	ZeroMemory ( &OSVersionInfo, sizeof ( OSVERSIONINFOEX ) );
