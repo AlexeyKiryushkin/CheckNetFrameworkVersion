@@ -16,11 +16,14 @@ DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subk
 		// ошибка нехватки буфера ERROR_MORE_DATA = 234 никак не анализируется, 
 		// так как версия длинее 99 символов - это все равно неправильная какая-то версия
 		if( (err = keyVer.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
+		{
 			versiontext += vernum;
+			versiontext += " ";
+		}
 
 		DWORD spnum = 0;
 		if( (errsp = keyVer.QueryDWORDValue("SP", spnum)) == ERROR_SUCCESS && spnum != 0 )
-			versiontext += " SP " + boost::lexical_cast<string>(spnum);
+			versiontext += "SP " + boost::lexical_cast<string>(spnum) + " ";
 	}
 	else
 	{
@@ -48,10 +51,21 @@ string GetV4VersionFromKey(const HKEY hkNetFrameworkVersions, const string vernu
 
 	// для .NET v4 есть два подключа, каждый со своей версией
 	if ( GetVersionStringValue(hkNetFrameworkVersions, vernumberkey + "\\Full", versionvalue) == ERROR_SUCCESS )
-		versionvalue += " Full";
+		versionvalue += "Full";
 	else
 		if ( GetVersionStringValue(hkNetFrameworkVersions, vernumberkey + "\\Client", versionvalue)  == ERROR_SUCCESS )
-			versionvalue += " Client";
+			versionvalue += "Client";
+
+	return versionvalue + "\r\n";
+}
+
+string GetV3VersionFromKey(const HKEY hkNetFrameworkVersions, const string vernumberkey)
+{
+	string versionvalue;
+
+	// для .NET v3.0 Version может быть в корне или в подключе Setup
+	if ( GetVersionStringValue(hkNetFrameworkVersions, vernumberkey, versionvalue) != ERROR_SUCCESS )
+		GetVersionStringValue(hkNetFrameworkVersions, vernumberkey + "\\Setup", versionvalue);
 
 	return versionvalue + "\r\n";
 }
@@ -68,10 +82,15 @@ string GetNextFrameworkVersionInfo(const HKEY hkNetFrameworkVersions, const stri
 {
 	string nextver = AlignTo( vernumberkey, align ) + "- ";
 
-	if( vernumberkey != "v4" )
-		nextver += GetVersionFromKey(hkNetFrameworkVersions, vernumberkey);
-	else 
+	if( vernumberkey == "v4" )
 		nextver += GetV4VersionFromKey(hkNetFrameworkVersions, vernumberkey);
+	else 
+	{
+		if( vernumberkey == "v3.0" )
+			nextver += GetV3VersionFromKey(hkNetFrameworkVersions, vernumberkey);
+		else
+			nextver += GetVersionFromKey(hkNetFrameworkVersions, vernumberkey);
+	}
 
 	return nextver;
 }
