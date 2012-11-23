@@ -19,7 +19,7 @@ DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subk
 			versiontext += vernum;
 
 		DWORD spnum = 0;
-		if( (errsp = keyVer.QueryDWORDValue("SP", spnum)) == ERROR_SUCCESS )
+		if( (errsp = keyVer.QueryDWORDValue("SP", spnum)) == ERROR_SUCCESS && spnum != 0 )
 			versiontext += " SP " + boost::lexical_cast<string>(spnum);
 	}
 	else
