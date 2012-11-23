@@ -4,7 +4,6 @@
 DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subkey, string &versiontext)
 {
 	DWORD err = 0;
-	DWORD errsp = 0;
 	CRegKey keyVer;
 	char vernum[100];
 	ZeroMemory( vernum, sizeof(vernum));
@@ -22,7 +21,7 @@ DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subk
 		}
 
 		DWORD spnum = 0;
-		if( (errsp = keyVer.QueryDWORDValue("SP", spnum)) == ERROR_SUCCESS && spnum != 0 )
+		if( keyVer.QueryDWORDValue("SP", spnum) == ERROR_SUCCESS && spnum != 0 )
 			versiontext += "SP " + boost::lexical_cast<string>(spnum) + " ";
 	}
 	else
