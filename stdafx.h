@@ -21,3 +21,5 @@
 #include <vector>
 
 using namespace std;
+
+#include <boost\lexical_cast.hpp>

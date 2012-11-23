@@ -4,6 +4,7 @@
 DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subkey, string &versiontext)
 {
 	DWORD err = 0;
+	DWORD errsp = 0;
 	CRegKey keyVer;
 	char vernum[100];
 	ZeroMemory( vernum, sizeof(vernum));
@@ -15,12 +16,11 @@ DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subk
 		// ошибка нехватки буфера ERROR_MORE_DATA = 234 никак не анализируется, 
 		// так как версия длинее 99 символов - это все равно неправильная какая-то версия
 		if( (err = keyVer.QueryStringValue("Version", vernum, &vernumlen)) == ERROR_SUCCESS )
-		{
 			versiontext += vernum;
-		}
-		else
-			// ну нету такого ключа, бывает
-			versiontext += "неизв.";
+
+		DWORD spnum = 0;
+		if( (errsp = keyVer.QueryDWORDValue("SP", spnum)) == ERROR_SUCCESS )
+			versiontext += " SP " + boost::lexical_cast<string>(spnum);
 	}
 	else
 	{
