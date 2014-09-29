@@ -34,6 +34,42 @@ DWORD GetVersionStringValue(const HKEY hkNetFrameworkVersions, const string subk
 	return err;
 }
 
+DWORD GerVersion45ReleaseValue(const HKEY hkNetFrameworkVersions, const string subkey, string &versiontext)
+{
+	DWORD err = 0;
+	CRegKey keyVer;
+	DWORD release = 0;
+
+	if( (err = keyVer.Open( hkNetFrameworkVersions, subkey.c_str(), KEY_READ )) == ERROR_SUCCESS )
+	{
+		if( (err = keyVer.QueryDWORDValue("Release", release)) == ERROR_SUCCESS )
+		{
+			if( release <= 378389 )
+				versiontext += "( v4.5 ";
+			else
+			{
+				if( release > 378389 && release < 379893 )
+					versiontext += "( v4.5.1 ";
+				else
+					versiontext += "( v4.5.2 ";
+			}
+			versiontext += "release " + boost::lexical_cast<string>(release) + " ) ";
+		}
+		else
+		{
+			// нет поля Release - это просто 4.0, 4.5 нет никакой
+		}
+	}
+	else
+	{
+		// раздел есть, но открыть его не получается - фигня какая-то, надо показать
+		CErrCodeMsg errinfo(err);
+		versiontext += errinfo.GetString();
+	}
+
+	return err;
+}
+
 string GetVersionFromKey(const HKEY hkNetFrameworkVersions, const string vernumberkey)
 {
 	DWORD err = 0;
@@ -47,13 +83,26 @@ string GetVersionFromKey(const HKEY hkNetFrameworkVersions, const string vernumb
 string GetV4VersionFromKey(const HKEY hkNetFrameworkVersions, const string vernumberkey)
 {
 	string versionvalue;
+	DWORD err = 0;
 
 	// для .NET v4 есть два подключа, каждый со своей версией
 	if ( GetVersionStringValue(hkNetFrameworkVersions, vernumberkey + "\\Full", versionvalue) == ERROR_SUCCESS )
+	{
+		// анализируем Release и уточняем номер версии
+		GerVersion45ReleaseValue(hkNetFrameworkVersions, vernumberkey + "\\Full", versionvalue);
+
 		versionvalue += "Full";
+	}
 	else
+	{
 		if ( GetVersionStringValue(hkNetFrameworkVersions, vernumberkey + "\\Client", versionvalue)  == ERROR_SUCCESS )
+		{
+			// анализируем Release и уточняем номер версии
+			GerVersion45ReleaseValue(hkNetFrameworkVersions, vernumberkey + "\\Client", versionvalue);
+
 			versionvalue += "Client";
+		}
+	}
 
 	return versionvalue + "\r\n";
 }
