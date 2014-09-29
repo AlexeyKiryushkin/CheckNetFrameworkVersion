@@ -5,6 +5,8 @@
 
 #pragma once
 
+#define NOMINMAX
+
 #include "targetver.h"
 
 #include <stdio.h>
@@ -19,6 +21,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 

@@ -99,10 +99,12 @@
     <ClCompile Include="CheckNetFrameworkVersion.cpp" />
     <ClCompile Include="NetFrameworkVersion.cpp" />
     <ClCompile Include="rusout.cpp" />
+    <ClCompile Include="SaveToFile.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="winversion.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -110,8 +112,10 @@
     <ClInclude Include="NetFrameworkVersion.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rusout.h" />
+    <ClInclude Include="SaveToFile.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="winversion.h" />
   </ItemGroup>
   <ItemGroup>

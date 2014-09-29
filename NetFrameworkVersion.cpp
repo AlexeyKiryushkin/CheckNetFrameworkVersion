@@ -149,7 +149,7 @@ string GetNextFrameworkVersionInfo(const HKEY hkNetFrameworkVersions, const stri
 // строковый ключ Version с полным номером версии.
 string GetNetFrameworkVersion()
 {
-	string allverinfo = "Установлены .Net Framework версий:\r\n";
+	string allverinfo = "Установлены .Net Framework версий:\r\n\r\n";
 	HKEY hkNetFrameworkVersions;
 	DWORD err = 0;
 	DWORD nMaxLen = 0;

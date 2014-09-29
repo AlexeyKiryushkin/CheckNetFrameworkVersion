@@ -6,10 +6,17 @@
 #include "winversion.h"
 #include "rusout.h"
 #include "NetFrameworkVersion.h"
+#include "SaveToFile.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	cout << endl << (GetWindowsVersion() + "\r\n\r\n" + GetNetFrameworkVersion()).c_str() << endl << "Нажмите любую клавишу...";
+	string verinfo = GetWindowsVersion() + "\r\n\r\n" + GetNetFrameworkVersion();
+
+	cout << endl << verinfo.c_str() << endl;
+	
+	cout << SaveToFile(verinfo).c_str() << endl << endl << endl;
+
+	cout << "Нажмите любую клавишу...";
 
 	_getch();
 
